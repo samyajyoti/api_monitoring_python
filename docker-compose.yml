@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  api-monitor:
+    build: .
+    container_name: api-monitor
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+
