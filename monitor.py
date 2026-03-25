@@ -4,28 +4,52 @@ import logging
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from logging.handlers import RotatingFileHandler
 
 # Load .env
 load_dotenv()
 
+# =======================
 # Configs
+# =======================
 raw_urls = os.getenv("HEALTH_URLS", "")
 SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK_URL", "").strip()
 CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", "60"))
 ENV_NAME = os.getenv("ENV_NAME", "TEST ENVIRONMENT")
 
-# Logging
+# =======================
+# Logging Setup
+# =======================
+LOG_DIR = "logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+
+LOG_FILE = os.path.join(LOG_DIR, "monitor.log")
+
+file_handler = RotatingFileHandler(
+    LOG_FILE, maxBytes=5 * 1024 * 1024, backupCount=3
+)
+
+stream_handler = logging.StreamHandler()
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[file_handler, stream_handler],
 )
+
 logger = logging.getLogger()
 
+logger.info("✅ Logger initialized")
+
+# =======================
 # Validate URL
+# =======================
 def is_valid_url(url):
     return url.startswith("http://") or url.startswith("https://")
 
+# =======================
 # Parse URLs
+# =======================
 HEALTH_URLS = {}
 
 for item in raw_urls.split(","):
@@ -33,42 +57,43 @@ for item in raw_urls.split(","):
     if not item:
         continue
 
-    if ":" in item and "=" in item:
-        try:
-            env, rest = item.split(":", 1)
-            name, url = rest.split("=", 1)
-            env, name, url = env.strip(), name.strip(), url.strip()
+    try:
+        # format: env:name=url
+        if "=" in item and ":" in item.split("=")[0]:
+            env_name, url = item.split("=", 1)
+            env, name = env_name.split(":", 1)
 
-            if is_valid_url(url):
-                HEALTH_URLS.setdefault(env, {})[name] = url
-            else:
-                logger.warning(f"Skipping invalid URL: {url}")
-
-        except Exception:
-            logger.warning(f"Skipping malformed entry: {item}")
-
-    elif "=" in item:
-        try:
+        # format: name=url
+        elif "=" in item:
+            env = "default"
             name, url = item.split("=", 1)
-            name, url = name.strip(), url.strip()
 
-            if is_valid_url(url):
-                HEALTH_URLS.setdefault("default", {})[name] = url
-            else:
-                logger.warning(f"Skipping invalid URL: {url}")
-
-        except Exception:
-            logger.warning(f"Skipping malformed entry: {item}")
-
-    else:
-        if is_valid_url(item):
-            HEALTH_URLS.setdefault("default", {})[item] = item
+        # format: plain url
         else:
-            logger.warning(f"Skipping invalid URL: {item}")
+            env = "default"
+            name = item
+            url = item
 
+        url = url.strip()
+
+        if is_valid_url(url):
+            HEALTH_URLS.setdefault(env, {})[name.strip()] = url
+        else:
+            logger.warning(f"Skipping invalid URL: {url}")
+
+    except Exception as e:
+        logger.warning(f"Skipping malformed entry: {item} | Error: {e}")
+
+logger.info(f"Parsed HEALTH_URLS: {HEALTH_URLS}")
+
+# =======================
 # Track last status
+# =======================
 last_status = {}
 
+# =======================
+# Slack Alert
+# =======================
 def send_slack_alert(message: str):
     if not SLACK_WEBHOOK:
         return
@@ -77,18 +102,23 @@ def send_slack_alert(message: str):
     except Exception as e:
         logger.error(f"Slack alert failed: {e}")
 
+# =======================
+# Format Output
+# =======================
 def format_line(url, status):
     now = datetime.now().strftime("%I:%M %p")
     icon = "✅" if status == 200 else "❌"
     return f"[{now}] {icon} {url} returned {status}"
 
+# =======================
+# Monitor Loop
+# =======================
 def monitor():
     logger.info(f"🚀 Starting health API monitor for {ENV_NAME}...")
 
     while True:
         output_lines = []
         alert_lines = []
-        has_failure = False
 
         for env, services in HEALTH_URLS.items():
             for name, url in services.items():
@@ -105,39 +135,35 @@ def monitor():
 
                 now = datetime.now().strftime("%I:%M %p")
 
-                # 🔴 DOWN alert (state change)
+                # 🔴 DOWN / RECOVERY alerts
                 if prev is not None and prev != current:
                     if current == "down":
                         alert_lines.append(f"[{now}] ❌ {url} is DOWN ({status})")
-
                     elif current == "up":
                         alert_lines.append(f"[{now}] 🟢 {url} RECOVERED (200)")
 
-                # First-time DOWN detection
                 elif prev is None and current == "down":
                     alert_lines.append(f"[{now}] ❌ {url} is DOWN ({status})")
 
                 last_status[key] = current
 
-                if status != 200:
-                    has_failure = True
-
-                # Output line
                 output_lines.append(format_line(url, status))
 
-        # 🖥️ Console Output
+        # ✅ Log output (console + file)
         final_output = "\n".join(output_lines)
         formatted_output = f"===== {ENV_NAME} =====\n{final_output}"
+        logger.info("\n" + formatted_output + "\n")
 
-        print("\n" + formatted_output + "\n")
-
-        # 🔔 Slack Alerts (only on change)
+        # 🔔 Slack alerts
         if alert_lines:
-            slack_message = "===== TEST ALERTS =====\n" + "\n".join(alert_lines)
+            slack_message = "=====INSURE PROD APP ALERTS =====\n" + "\n".join(alert_lines)
             send_slack_alert(f"```\n{slack_message}\n```")
 
         logger.info(f"Sleeping for {CHECK_INTERVAL} seconds...")
         time.sleep(CHECK_INTERVAL)
 
+# =======================
+# Main
+# =======================
 if __name__ == "__main__":
     monitor()
