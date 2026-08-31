@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">◉</div>
+        <div>
+          <h1>Mon Dashboard</h1>
+          <p>Alert monitoring</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-filter="all">All Alerts</button>
+        <button class="nav-item" data-filter="firing">Firing</button>
+        <button class="nav-item" data-filter="uwsgi">uWSGI</button>
+        <button class="nav-item" data-filter="rabbitmq">RabbitMQ</button>
+        <button class="nav-item" data-filter="http_error">HTTP Errors</button>
+        <button class="nav-item" data-filter="grafana">Grafana</button>
+      </nav>
+
+      <div class="webhook-info">
+        <h3>Incoming Webhook</h3>
+        <code id="webhook-url">/webhook</code>
+        <p class="webhook-hint">POST {"text": "alert message"}</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>Alert Overview</h2>
+          <p class="subtitle">Live alerts from Grafana, Slack scripts, and webhooks</p>
+        </div>
+        <div class="topbar-actions">
+          <span class="live-indicator"><span class="pulse"></span> Live</span>
+          <button id="refresh-btn" class="btn">Refresh</button>
+        </div>
+      </header>
+
+      <section class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Total</span>
+          <span class="stat-value" id="stat-total">0</span>
+        </div>
+        <div class="stat-card firing">
+          <span class="stat-label">Firing</span>
+          <span class="stat-value" id="stat-firing">0</span>
+        </div>
+        <div class="stat-card uwsgi">
+          <span class="stat-label">uWSGI</span>
+          <span class="stat-value" id="stat-uwsgi">0</span>
+        </div>
+        <div class="stat-card rabbitmq">
+          <span class="stat-label">RabbitMQ</span>
+          <span class="stat-value" id="stat-rabbitmq">0</span>
+        </div>
+        <div class="stat-card http">
+          <span class="stat-label">HTTP Errors</span>
+          <span class="stat-value" id="stat-http">0</span>
+        </div>
+        <div class="stat-card grafana">
+          <span class="stat-label">Grafana</span>
+          <span class="stat-value" id="stat-grafana">0</span>
+        </div>
+      </section>
+
+      <section class="alerts-section">
+        <div class="section-header">
+          <h3 id="section-title">All Alerts</h3>
+          <span id="alert-count" class="badge">0 alerts</span>
+        </div>
+        <div id="alerts-container" class="alerts-grid"></div>
+        <div id="empty-state" class="empty-state hidden">
+          <p>No alerts yet. Send one via webhook to get started.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <button class="modal-close" id="modal-close">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,12 +1,20 @@
-version: "3.9"
-
 services:
-  api-monitor:
+  dashboard:
     build: .
-    container_name: api-monitor
-    restart: always
-    env_file:
-      - .env
+    container_name: mon-dashboard
+    ports:
+      - "8080:8080"
     volumes:
-      - ./logs:/app/logs
+      - dashboard-data:/app/data
+    environment:
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/api/stats')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
+volumes:
+  dashboard-data:

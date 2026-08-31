@@ -1,12 +1,86 @@
-# api_monitoring_python
-add .env file
-```# Comma-separated list of health-check URLs
-ENV_NAME=TEST ENVIRONMENT
+# Mon Dashboard
 
-HEALTH_URLS=https://example1.com,https://example2.com
-# Slack webhook URL (optional, leave blank if not using)
-SLACK_WEBHOOK_URL=""
+A lightweight alert dashboard with a **Python (FastAPI) backend** and a **web frontend**. Ingest alerts via a single Slack-style incoming webhook. Alerts are auto-classified: uWSGI, RabbitMQ, HTTP errors, Grafana.
 
+## Docker (recommended)
 
-# Interval in seconds between checks
-CHECK_INTERVAL=180
+```bash
+docker compose up -d --build
+```
+
+Dashboard: **http://localhost:8080**  
+Webhook: **http://localhost:8080/webhook**
+
+```bash
+# View logs
+docker compose logs -f
+
+# Load sample alerts
+docker compose exec dashboard python seed_samples.py
+
+# Stop
+docker compose down
+```
+
+Optional webhook token — create a `.env` file:
+
+```bash
+WEBHOOK_TOKEN=my-secret-token
+```
+
+Then post alerts to `http://localhost:8080/webhook/my-secret-token`.
+
+Alert data persists in the `dashboard-data` Docker volume (SQLite).
+
+## Local development
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python seed_samples.py   # optional
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+```
+
+## Incoming webhook (Slack-style)
+
+```
+POST http://your-host:8080/webhook
+Content-Type: application/json
+
+{"text": "your alert message here"}
+```
+
+Response: `ok` (HTTP 200), just like Slack.
+
+### Send alongside Slack
+
+```python
+import requests
+
+payload = {"text": alert_message}
+requests.post("http://your-dashboard:8080/webhook", json=payload, timeout=5)
+```
+
+### curl examples
+
+```bash
+curl -X POST http://localhost:8080/webhook \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Found uWSGI error\nAgent: demapp3\nContainer: dem2"}'
+```
+
+## Alert type detection
+
+| Pattern in `text` | Type |
+|---|---|
+| `uWSGI`, `listen queue` | uWSGI |
+| `Queue:`, `Current count`, `Consumers` | RabbitMQ |
+| `Error counts exceeding`, `404 = N` | HTTP Error |
+| Grafana webhook JSON | Grafana |
+
+## API
+
+- `GET /api/alerts` — list alerts (`?alert_type=uwsgi&status=firing`)
+- `GET /api/stats` — counts by type
+- `PATCH /api/alerts/{id}/status` — `{"status": "resolved"}`
