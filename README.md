@@ -8,8 +8,8 @@ A lightweight alert dashboard with a **Python (FastAPI) backend** and a **web fr
 docker compose up -d --build
 ```
 
-Dashboard: **http://localhost:8080**  
-Webhook: **http://localhost:8080/webhook**
+Dashboard: **http://localhost:8081**  
+Webhook: **http://localhost:8081/webhook**
 
 ```bash
 # View logs
@@ -28,7 +28,7 @@ Optional webhook token — create a `.env` file:
 WEBHOOK_TOKEN=my-secret-token
 ```
 
-Then post alerts to `http://localhost:8080/webhook/my-secret-token`.
+Then post alerts to `http://localhost:8081/webhook/my-secret-token`.
 
 Alert data persists in the `dashboard-data` Docker volume (SQLite).
 
@@ -39,13 +39,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python seed_samples.py   # optional
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8081
 ```
 
 ## Incoming webhook (Slack-style)
 
 ```
-POST http://your-host:8080/webhook
+POST http://your-host:8081/webhook
 Content-Type: application/json
 
 {"text": "your alert message here"}
@@ -59,13 +59,13 @@ Response: `ok` (HTTP 200), just like Slack.
 import requests
 
 payload = {"text": alert_message}
-requests.post("http://your-dashboard:8080/webhook", json=payload, timeout=5)
+requests.post("http://your-dashboard:8081/webhook", json=payload, timeout=5)
 ```
 
 ### curl examples
 
 ```bash
-curl -X POST http://localhost:8080/webhook \
+curl -X POST http://localhost:8081/webhook \
   -H "Content-Type: application/json" \
   -d '{"text": "Found uWSGI error\nAgent: demapp3\nContainer: dem2"}'
 ```
