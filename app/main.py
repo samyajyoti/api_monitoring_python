@@ -45,7 +45,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="Mon Dashboard", description="Alert monitoring dashboard", lifespan=lifespan)
+app = FastAPI(title="DC-Monitoring", description="Alert monitoring dashboard", lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 

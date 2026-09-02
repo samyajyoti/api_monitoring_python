@@ -388,13 +388,12 @@ body {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   height: 32px;
-  padding: 0 10px;
+  padding: 0 28px 0 10px;
   background: #111217;
   border: 1px solid #2c3235;
   border-radius: 4px;
-  cursor: pointer;
   flex-shrink: 0;
   transition: border-color 0.15s, background 0.15s;
 }
@@ -404,17 +403,16 @@ body {
   background: #161719;
 }
 
+.grafana-time-picker:focus-within {
+  border-color: #5794f2;
+  box-shadow: 0 0 0 2px rgba(87, 148, 242, 0.2);
+}
+
 .grafana-time-icon {
   width: 16px;
   height: 16px;
   color: #ccccdc;
   flex-shrink: 0;
-}
-
-.grafana-time-label {
-  font-size: 13px;
-  color: #ccccdc;
-  white-space: nowrap;
   pointer-events: none;
 }
 
@@ -427,22 +425,37 @@ body {
 }
 
 .grafana-time-chevron {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 14px;
   height: 14px;
   color: #8e8ea0;
-  flex-shrink: 0;
   pointer-events: none;
 }
 
 .grafana-time-select {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  border: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   background: transparent;
+  border: none;
+  color: #ccccdc;
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  outline: none;
+  min-width: 110px;
+  max-width: 150px;
+  padding: 0;
+  line-height: 32px;
+}
+
+.grafana-time-select option,
+.grafana-time-select optgroup {
+  background: #181b1f;
+  color: #ccccdc;
 }
 
 .topbar-actions a.btn {

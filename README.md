@@ -1,4 +1,4 @@
-# Mon Dashboard
+# DC-Monitoring
 
 A lightweight alert dashboard with a **Python (FastAPI) backend** and a **web frontend**. Ingest alerts via a single Slack-style incoming webhook. Alerts are auto-classified: uWSGI, RabbitMQ, HTTP errors, Grafana.
 

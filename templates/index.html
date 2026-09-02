@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon Dashboard</title>
-  <link rel="stylesheet" href="/static/css/style.css?v=4">
+  <title>DC-Monitoring</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=5">
 </head>
 <body>
   <div class="app">
@@ -12,7 +12,7 @@
       <div class="brand">
         <div class="brand-icon">◉</div>
         <div>
-          <h1>Mon Dashboard</h1>
+          <h1>DC-Monitoring</h1>
           <p>Alert monitoring</p>
         </div>
       </div>
@@ -40,15 +40,10 @@
           <p class="subtitle">Live alerts from Grafana, Slack scripts, and webhooks</p>
         </div>
         <div class="topbar-actions">
-          <label class="grafana-time-picker" for="time-range">
+          <div class="grafana-time-picker">
             <svg class="grafana-time-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
               <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-            <span id="time-range-label" class="grafana-time-label">Last 1 day</span>
-            <span class="grafana-time-tz">IST</span>
-            <svg class="grafana-time-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <select id="time-range" class="grafana-time-select" aria-label="Time range">
               <optgroup label="Recent">
@@ -68,7 +63,11 @@
                 <option value="10080">Last 7 days</option>
               </optgroup>
             </select>
-          </label>
+            <span class="grafana-time-tz">IST</span>
+            <svg class="grafana-time-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
           <span class="live-indicator"><span class="pulse"></span> Live</span>
           <button id="refresh-btn" class="btn">Refresh</button>
           <a href="/logout" class="btn">Logout</a>
