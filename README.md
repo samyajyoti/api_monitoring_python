@@ -32,6 +32,20 @@ Then post alerts to `http://localhost:8081/webhook/my-secret-token`.
 
 Alert data persists in the `dashboard-data` Docker volume (SQLite).
 
+### Login credentials
+
+Set in `.env` or `docker-compose.yml`:
+
+```bash
+DASHBOARD_USER=admin
+DASHBOARD_PASSWORD=your-secure-password
+SECRET_KEY=random-secret-string
+```
+
+Default (change in production): `admin` / `admin`
+
+The webhook endpoint stays public — scripts don't need login.
+
 ## Local development
 
 ```bash

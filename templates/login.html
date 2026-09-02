@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Mon Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="brand login-brand">
+      <div class="brand-icon">◉</div>
+      <div>
+        <h1>Mon Dashboard</h1>
+        <p>Sign in to view alerts</p>
+      </div>
+    </div>
+
+    {% if error %}
+    <div class="login-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/login" class="login-form">
+      <label>
+        Username
+        <input type="text" name="username" required autofocus autocomplete="username">
+      </label>
+      <label>
+        Password
+        <input type="password" name="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -8,9 +8,12 @@ services:
       - dashboard-data:/app/data
     environment:
       WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:-}
+      DASHBOARD_USER: ${DASHBOARD_USER:-admin}
+      DASHBOARD_PASSWORD: ${DASHBOARD_PASSWORD:-admin}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/api/stats')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8081/health')"]
       interval: 30s
       timeout: 5s
       retries: 3

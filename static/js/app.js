@@ -8,16 +8,30 @@ const TYPE_LABELS = {
 
 let currentFilter = "all";
 
+function getSinceMinutes() {
+  return document.getElementById("time-range").value;
+}
+
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, options);
+  if (res.status === 401) {
+    window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
+  return res;
+}
+
 async function fetchStats() {
-  const res = await fetch("/api/stats");
+  const params = new URLSearchParams({ since_minutes: getSinceMinutes() });
+  const res = await apiFetch(`/api/stats?${params}`);
   return res.json();
 }
 
 async function fetchAlerts(type = null, status = null) {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({ since_minutes: getSinceMinutes() });
   if (type) params.set("alert_type", type);
   if (status) params.set("status", status);
-  const res = await fetch(`/api/alerts?${params}`);
+  const res = await apiFetch(`/api/alerts?${params}`);
   return res.json();
 }
 
@@ -115,7 +129,7 @@ async function getFilteredAlerts() {
 }
 
 async function updateStatus(id, status) {
-  await fetch(`/api/alerts/${id}/status`, {
+  await apiFetch(`/api/alerts/${id}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
@@ -124,7 +138,7 @@ async function updateStatus(id, status) {
 }
 
 async function showDetail(id) {
-  const res = await fetch(`/api/alerts/${id}`);
+  const res = await apiFetch(`/api/alerts/${id}`);
   const alert = await res.json();
   const modal = document.getElementById("modal");
   const body = document.getElementById("modal-body");
@@ -181,6 +195,7 @@ document.querySelectorAll(".nav-item").forEach((btn) => {
   });
 });
 
+document.getElementById("time-range").addEventListener("change", loadDashboard);
 document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
 document.getElementById("modal-close").addEventListener("click", () => {
   document.getElementById("modal").classList.add("hidden");

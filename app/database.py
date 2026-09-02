@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import aiosqlite
@@ -119,6 +119,7 @@ async def insert_alert(alert: Alert) -> Alert:
 async def get_alerts(
     alert_type: str | None = None,
     status: str | None = None,
+    since_minutes: int | None = None,
     limit: int = 100,
 ) -> list[Alert]:
     query = "SELECT * FROM alerts WHERE 1=1"
@@ -130,6 +131,10 @@ async def get_alerts(
     if status:
         query += " AND status = ?"
         params.append(status)
+    if since_minutes:
+        since = (datetime.now(timezone.utc) - timedelta(minutes=since_minutes)).isoformat()
+        query += " AND created_at >= ?"
+        params.append(since)
 
     query += " ORDER BY created_at DESC LIMIT ?"
     params.append(limit)
@@ -160,25 +165,37 @@ async def update_alert_status(alert_id: int, status: AlertStatus) -> Alert | Non
     return await get_alert(alert_id)
 
 
-async def get_stats() -> AlertStats:
+async def get_stats(since_minutes: int | None = None) -> AlertStats:
+    where = ""
+    params: list[object] = []
+    if since_minutes:
+        since = (datetime.now(timezone.utc) - timedelta(minutes=since_minutes)).isoformat()
+        where = " WHERE created_at >= ?"
+        params = [since]
+
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
 
-        total_cursor = await db.execute("SELECT COUNT(*) as c FROM alerts")
+        total_cursor = await db.execute(f"SELECT COUNT(*) as c FROM alerts{where}", params)
         total = (await total_cursor.fetchone())["c"]
 
+        firing_where = f"{where} {'AND' if where else 'WHERE'} status = 'firing'"
+        firing_params = list(params)
         firing_cursor = await db.execute(
-            "SELECT COUNT(*) as c FROM alerts WHERE status = 'firing'"
+            f"SELECT COUNT(*) as c FROM alerts{firing_where}",
+            firing_params,
         )
         firing = (await firing_cursor.fetchone())["c"]
 
         type_cursor = await db.execute(
-            "SELECT alert_type, COUNT(*) as c FROM alerts GROUP BY alert_type"
+            f"SELECT alert_type, COUNT(*) as c FROM alerts{where} GROUP BY alert_type",
+            params,
         )
         by_type = {row["alert_type"]: row["c"] for row in await type_cursor.fetchall()}
 
         sev_cursor = await db.execute(
-            "SELECT severity, COUNT(*) as c FROM alerts GROUP BY severity"
+            f"SELECT severity, COUNT(*) as c FROM alerts{where} GROUP BY severity",
+            params,
         )
         by_severity = {row["severity"]: row["c"] for row in await sev_cursor.fetchall()}
 
