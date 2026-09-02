@@ -7,30 +7,68 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="login-page">
-  <div class="login-card">
-    <div class="brand login-brand">
-      <div class="brand-icon">◉</div>
-      <div>
+  <div class="login-bg">
+    <div class="login-glow login-glow-1"></div>
+    <div class="login-glow login-glow-2"></div>
+    <div class="login-grid"></div>
+  </div>
+
+  <div class="login-shell">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          </svg>
+        </div>
         <h1>Mon Dashboard</h1>
-        <p>Sign in to view alerts</p>
+        <p>Monitor alerts from Grafana, Slack scripts, and webhooks in one place.</p>
       </div>
+
+      {% if error %}
+      <div class="login-error">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="post" action="/login" class="login-form">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5 20c0-4 3.5-6 7-6s7 2 7 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input id="username" type="text" name="username" placeholder="Enter username" required autofocus autocomplete="username">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <input id="password" type="password" name="password" placeholder="Enter password" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">
+          <span>Sign in to dashboard</span>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </form>
     </div>
 
-    {% if error %}
-    <div class="login-error">{{ error }}</div>
-    {% endif %}
-
-    <form method="post" action="/login" class="login-form">
-      <label>
-        Username
-        <input type="text" name="username" required autofocus autocomplete="username">
-      </label>
-      <label>
-        Password
-        <input type="password" name="password" required autocomplete="current-password">
-      </label>
-      <button type="submit" class="btn btn-primary">Sign in</button>
-    </form>
+    <p class="login-footer">Secured access · Webhook endpoint remains public for scripts</p>
   </div>
 </body>
 </html>

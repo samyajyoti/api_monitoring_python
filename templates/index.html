@@ -40,20 +40,35 @@
           <p class="subtitle">Live alerts from Grafana, Slack scripts, and webhooks</p>
         </div>
         <div class="topbar-actions">
-          <select id="time-range" class="time-select" aria-label="Time range">
-            <option value="30">Last 30 min</option>
-            <option value="60">Last 1 hour</option>
-            <option value="120">Last 2 hours</option>
-            <option value="360">Last 6 hours</option>
-            <option value="720">Last 12 hours</option>
-            <option value="1440" selected>Last 1 day</option>
-            <option value="2880">Last 2 days</option>
-            <option value="4320">Last 3 days</option>
-            <option value="5760">Last 4 days</option>
-            <option value="7200">Last 5 days</option>
-            <option value="8640">Last 6 days</option>
-            <option value="10080">Last 7 days</option>
-          </select>
+          <div class="time-filter">
+            <div class="time-select-wrap">
+              <svg class="time-select-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <select id="time-range" class="time-select" aria-label="Time range">
+                <optgroup label="Recent">
+                  <option value="30">Last 30 minutes</option>
+                  <option value="60">Last 1 hour</option>
+                  <option value="120">Last 2 hours</option>
+                  <option value="360">Last 6 hours</option>
+                  <option value="720">Last 12 hours</option>
+                </optgroup>
+                <optgroup label="Days">
+                  <option value="1440" selected>Last 1 day</option>
+                  <option value="2880">Last 2 days</option>
+                  <option value="4320">Last 3 days</option>
+                  <option value="5760">Last 4 days</option>
+                  <option value="7200">Last 5 days</option>
+                  <option value="8640">Last 6 days</option>
+                  <option value="10080">Last 7 days</option>
+                </optgroup>
+              </select>
+              <svg class="time-select-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
           <span class="live-indicator"><span class="pulse"></span> Live</span>
           <button id="refresh-btn" class="btn">Refresh</button>
           <a href="/logout" class="btn">Logout</a>
