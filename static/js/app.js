@@ -113,13 +113,25 @@ function renderStats(stats) {
   document.getElementById("stat-grafana").textContent = stats.by_type.grafana || 0;
 }
 
+function updateTimeLabel() {
+  const select = document.getElementById("time-range");
+  const label = document.getElementById("time-range-label");
+  if (select && label) {
+    label.textContent = select.options[select.selectedIndex].text;
+  }
+}
+
 async function loadDashboard() {
-  const [stats, alertsData] = await Promise.all([
-    fetchStats(),
-    getFilteredAlerts(),
-  ]);
-  renderStats(stats);
-  renderAlerts(alertsData.alerts);
+  try {
+    const [stats, alertsData] = await Promise.all([
+      fetchStats(),
+      getFilteredAlerts(),
+    ]);
+    renderStats(stats);
+    renderAlerts(alertsData.alerts);
+  } catch (err) {
+    console.error("Dashboard load failed:", err);
+  }
 }
 
 async function getFilteredAlerts() {
@@ -195,7 +207,10 @@ document.querySelectorAll(".nav-item").forEach((btn) => {
   });
 });
 
-document.getElementById("time-range").addEventListener("change", loadDashboard);
+document.getElementById("time-range").addEventListener("change", () => {
+  updateTimeLabel();
+  loadDashboard();
+});
 document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
 document.getElementById("modal-close").addEventListener("click", () => {
   document.getElementById("modal").classList.add("hidden");
@@ -207,5 +222,6 @@ document.querySelector(".modal-backdrop").addEventListener("click", () => {
 const base = window.location.origin;
 document.getElementById("webhook-url").textContent = base + "/webhook";
 
+updateTimeLabel();
 loadDashboard();
 setInterval(loadDashboard, 15000);
