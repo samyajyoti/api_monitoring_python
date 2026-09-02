@@ -23,13 +23,17 @@ async function apiFetch(url, options = {}) {
 }
 
 async function fetchStats() {
-  const params = new URLSearchParams({ since_minutes: getSinceMinutes() });
+  const minutes = getSinceMinutes();
+  const params = new URLSearchParams();
+  if (minutes) params.set("since_minutes", minutes);
   const res = await apiFetch(`/api/stats?${params}`);
   return res.json();
 }
 
 async function fetchAlerts(type = null, status = null) {
-  const params = new URLSearchParams({ since_minutes: getSinceMinutes() });
+  const minutes = getSinceMinutes();
+  const params = new URLSearchParams();
+  if (minutes) params.set("since_minutes", minutes);
   if (type) params.set("alert_type", type);
   if (status) params.set("status", status);
   const res = await apiFetch(`/api/alerts?${params}`);

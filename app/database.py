@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
 import aiosqlite
@@ -10,7 +10,25 @@ DB_PATH = Path(__file__).parent.parent / "data" / "alerts.db"
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _since_modifier(since_minutes: int) -> str:
+    return f"-{int(since_minutes)} minutes"
+
+
+def _time_window_sql(since_minutes: int) -> tuple[str, list[object]]:
+    """Alerts in selected window, plus unresolved alerts from the last 7 days."""
+    return (
+        """ AND (
+            datetime(created_at) >= datetime('now', ?)
+            OR (
+                status != 'resolved'
+                AND datetime(created_at) >= datetime('now', '-7 days')
+            )
+        )""",
+        [_since_modifier(since_minutes)],
+    )
 
 
 async def init_db() -> None:
@@ -132,9 +150,9 @@ async def get_alerts(
         query += " AND status = ?"
         params.append(status)
     if since_minutes:
-        since = (datetime.now(timezone.utc) - timedelta(minutes=since_minutes)).isoformat()
-        query += " AND created_at >= ?"
-        params.append(since)
+        clause, clause_params = _time_window_sql(since_minutes)
+        query += clause
+        params.extend(clause_params)
 
     query += " ORDER BY created_at DESC LIMIT ?"
     params.append(limit)
@@ -169,9 +187,9 @@ async def get_stats(since_minutes: int | None = None) -> AlertStats:
     where = ""
     params: list[object] = []
     if since_minutes:
-        since = (datetime.now(timezone.utc) - timedelta(minutes=since_minutes)).isoformat()
-        where = " WHERE created_at >= ?"
-        params = [since]
+        clause, clause_params = _time_window_sql(since_minutes)
+        where = " WHERE " + clause.removeprefix(" AND ")
+        params = clause_params
 
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
